@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -29,6 +30,42 @@ func (p person) say() string {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello Dog Go from indexHandler!")
+}
+
+type Breed struct {
+	Message string `json:"message"`
+	Status  string `json:"status"`
+}
+
+func breedHandler(w http.ResponseWriter, r *http.Request) {
+	const url string = "https://dog.ceo/api/breeds/image/random"
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("GET Error")
+	}
+	defer resp.Body.Close()
+
+	//body, err := io.ReadAll(resp.Body)
+	//if err != nil {
+	//    fmt.Println("Read Error")
+	//}
+	//fmt.Printf("%s", body)
+
+	var b Breed
+	if err := json.NewDecoder(resp.Body).Decode(&b); err != nil {
+		log.Fatal("Failed!")
+	}
+	fmt.Println(b.Message)
+	fmt.Println(b.Status)
+
+	json.NewEncoder(w).Encode(b)
+}
+
+func commonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func main() {
@@ -82,7 +119,9 @@ func main() {
 	//})
 
 	r := mux.NewRouter()
+	r.Use(commonMiddleware)
 	r.HandleFunc("/", indexHandler)
+	r.HandleFunc("/breeds", breedHandler)
 	http.Handle("/", r)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
