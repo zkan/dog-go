@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/zkan/dog-go/fizzbuzz"
 )
@@ -42,4 +44,17 @@ func main() {
 
 	fmt.Println(kan.say())
 	fmt.Println(salee.say())
+
+	const url string = "https://dog.ceo/api/breeds/image/random"
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("GET Error")
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Read Error")
+	}
+	fmt.Printf("%s", body)
 }
