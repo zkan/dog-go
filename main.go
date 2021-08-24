@@ -11,6 +11,10 @@ type person struct {
 	money float64
 }
 
+func (p person) say() string {
+	return "Hey " + p.name
+}
+
 func main() {
 	fmt.Println("vim-go")
 
@@ -35,4 +39,7 @@ func main() {
 		money: 130.5,
 	}
 	fmt.Println(salee)
+
+	fmt.Println(kan.say())
+	fmt.Println(salee.say())
 }
